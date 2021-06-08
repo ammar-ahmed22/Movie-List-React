@@ -69,8 +69,10 @@ app.post('/api/remove-movie', (req, res)=>{
     }, res)
 })
 
-app.post('/api/watch-movie', (req, res) =>{
+app.post('/api/movie-status/:status', (req, res) =>{
     const movie = req.body.movie;
+
+    const movieStatus = req.params.status;
 
     withDB( async (db) =>{
         const moviesObj = await db.collection('movies').findOne({});
@@ -78,10 +80,15 @@ app.post('/api/watch-movie', (req, res) =>{
         await db.collection('movies').updateOne({}, {
             '$set':{
                 movies: moviesObj.movies.map(item => {
-                    if (item.name == movie){
+                    if (item.name == movie && movieStatus == 'watched'){
                         return {
                             "name": item.name,
                             "watched": true,
+                        }
+                    }else if (item.name == movie && movieStatus == 'not-watched'){
+                        return {
+                            "name": item.name,
+                            "watched": false
                         }
                     }else{
                         return {
@@ -98,6 +105,6 @@ app.post('/api/watch-movie', (req, res) =>{
     }, res)
 })
 
-const PORT = 1000;
+const PORT = 4000;
 
 app.listen(PORT, ()=>console.log(`listening on port ${PORT}`));
