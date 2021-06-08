@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx nodemon --exec babel-node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "error-test": "node src/test.js"
+    "debug": "node src/test.js"
   },
   "keywords": [],
   "author": "",

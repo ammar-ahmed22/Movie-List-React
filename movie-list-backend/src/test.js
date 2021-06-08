@@ -9,7 +9,7 @@ const movies = [
     }
 ]
 
-const movie = "Interstellar";
+const movie = "Space Jam";
 
 const updatedMovies = movies.map(item =>{
     if (item.name == movie){
@@ -25,4 +25,7 @@ const updatedMovies = movies.map(item =>{
     }
 })
 
-console.log(updatedMovies);
+console.log(movies.some(item => {
+    return item.name == movie
+}))
+

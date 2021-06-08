@@ -29,79 +29,115 @@ app.get('/hello', (req, res)=>{
     })
 });
 
-app.post('/api/add-movie', (req, res)=>{
-    const movie = req.body.movie; //Getting movie
+//Gets all movies from MongoDB
+app.get('/api/movies', async (req, res)=>{
+    withDB(async (db)=>{
+        const movies = await db.collection('movies').findOne({});
 
-    withDB( async (db) =>{
-        const moviesObj = await db.collection('movies').findOne({}); //movie collection before updating
-
-        await db.collection('movies').updateOne({}, {
-            '$set': {
-                movies: moviesObj.movies.concat(movie)//Updating with movie added to the list
-            }
-        });
-
-        const updatedMovies = await db.collection('movies').findOne({}); //Updated
-
-        res.status(200).json(updatedMovies);
-    }, res)
-    console.table(movie)
-})
-
-app.post('/api/remove-movie', (req, res)=>{
-    const movie = req.body.movie;
-
-    withDB( async (db) =>{
-        const moviesObj = await db.collection('movies').findOne({});
-        
-        
-        await db.collection('movies').updateOne({}, {
-            '$set':{
-                movies: moviesObj.movies.filter(item =>{
-                    return item.name !== movie;
-                })
-            }
-        });
-
-        const updatedMoviesObj = await db.collection('movies').findOne({});
-
-        res.status(200).json(updatedMoviesObj);
+        res.status(200).json(movies)
     }, res)
 })
 
-app.post('/api/movie-status/:status', (req, res) =>{
-    const movie = req.body.movie;
+//Updates movie status
+app.get('/api/movie-status/', async (req, res)=>{
+    const {movie, status} = req.query; //optional query paramteres, both required
 
-    const movieStatus = req.params.status;
+    const parsedMovie = movie.split('-').join(' '); //parsing movie to space separated
 
-    withDB( async (db) =>{
+    withDB(async (db) =>{
         const moviesObj = await db.collection('movies').findOne({});
 
-        await db.collection('movies').updateOne({}, {
-            '$set':{
-                movies: moviesObj.movies.map(item => {
-                    if (item.name == movie && movieStatus == 'watched'){
-                        return {
-                            "name": item.name,
-                            "watched": true,
-                        }
-                    }else if (item.name == movie && movieStatus == 'not-watched'){
-                        return {
-                            "name": item.name,
-                            "watched": false
-                        }
-                    }else{
-                        return {
-                            "name": item.name,
-                            "watched": item.watched
-                        }
-                    }
-                })
-            }
-        });
-        const updatedMoviesObj = await db.collection('movies').findOne({});
+        const movieExists = moviesObj.movies.some(item => {
+            return item.name == parsedMovie;
+        }) 
 
-        res.status(200).json(updatedMoviesObj);
+        if (movieExists){
+            await db.collection('movies').updateOne({}, {
+                '$set':{
+                    movies: moviesObj.movies.map(item =>{
+                        if (item.name == parsedMovie){
+                            return {
+                                "name": item.name,
+                                "watched": (status == 'watched') ? true : false
+                            }
+                        }else{
+                            return {
+                                "name": item.name,
+                                "watched": item.watched
+                            }
+                        }
+                    })
+                }
+            })
+    
+            const updatedMoviesObj = await db.collection('movies').findOne({})
+            res.status(200).json(updatedMoviesObj)
+        }else{
+            res.status(404).json({
+                "error": `movie: '${parsedMovie}' does not exist`
+            })
+        }
+        
+    }, res)
+
+    console.log(`movie: ${parsedMovie}, status: ${status}`);
+})
+
+// Add or remove movies from database
+app.get('/api/movies/:operation', async (req, res)=>{
+    const {movie, status} = req.query; //optional query parameters, status only required for adding
+    const {operation} = req.params; //operation: add or remove
+
+    const parsedMovie = movie.split('-').join(' '); //parsing movie to space separated
+
+
+    withDB(async (db)=>{
+        const moviesObj = await db.collection('movies').findOne({});
+
+        const movieExists = moviesObj.movies.some(item => {
+            return item.name == parsedMovie;
+        }) 
+
+        
+        if (operation === 'add'){
+            await db.collection('movies').updateOne({}, {
+                '$set': {
+                    movies: moviesObj.movies.concat(
+                        {
+                            "name": parsedMovie,
+                            "watched": (status === 'watched') ? true : false
+                        }
+                    )
+                }
+            })
+
+            const updatedMoviesObj = await db.collection('movies').findOne({});
+            res.status(200).json(updatedMoviesObj)
+        }else if (operation === 'remove' && movieExists){
+            await db.collection('movies').updateOne({}, {
+                '$set': {
+                    movies: moviesObj.movies.filter(item =>{
+                        return item.name !== parsedMovie
+                    })
+                }
+            })
+
+            const updatedMoviesObj = await db.collection('movies').findOne({});
+            res.status(200).json(updatedMoviesObj);
+        }else if (!movieExists && operation == 'remove'){
+            res.status(404).json({
+                "error":`movie: '${parsedMovie} does not exist; cannot be removed`
+            })
+        }else{
+            res.status(400).json({
+                "error": "something went wrong, check API call",
+                "params": {
+                    parsedMovie,
+                    status,
+                    operation
+                }
+            })
+        }
     }, res)
 })
 
