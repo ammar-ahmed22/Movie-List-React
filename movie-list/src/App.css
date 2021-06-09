@@ -24,6 +24,12 @@
 .movie-cont{
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.movie-info-cont{
+  display: flex;
+  align-items: center;
 }
 
 .movie-text{
@@ -64,4 +70,31 @@
 .checked{
   display: none;
   cursor: pointer;
+}
+
+.movie-input{
+  border: none;
+  border-bottom: 4px solid var(--white);
+  outline: none;
+  background: var(--background);
+  color: var(--white);
+  font-size: 1.5rem;
+  margin: 1rem .5rem 2rem 2rem;
+}
+
+.add-button{
+  background: var(--white);
+  outline: none;
+  border: none;
+  color: var(--background);
+  height: 2rem;
+  width: 4rem;
+  border-radius: .5rem;
+}
+
+.remove-button{
+  cursor: pointer;
+  color: red;
+  font-size: 1.5rem;
+  margin-left: 5rem;
 }

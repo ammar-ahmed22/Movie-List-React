@@ -14,13 +14,13 @@ const HomePage = () =>{
         };
 
         fetchData()
-    }, [])
+    }, [data])
 
     console.log(data.movies)
     const movies = data.movies;
 
     return (
-        <MovieList movies={movies}></MovieList>
+        <MovieList movies={movies} setData={setData}></MovieList>
     )
 }
 
