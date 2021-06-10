@@ -11,7 +11,7 @@ app.use(bodyParser.json())
 const withDB = async (operations, res) =>{
 
     try{
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true});
+        const client = await MongoClient.connect('mongodb://localhost/movie-list', { useNewUrlParser: true, useUnifiedTopology: true});
 
         const db = client.db('movie-list');
 
@@ -24,9 +24,30 @@ const withDB = async (operations, res) =>{
 }
 
 app.get('/hello', (req, res)=>{
-    res.status(200).json({
-        "message":"hello world!"
-    })
+    const {firstName, lastName} = req.query;
+
+
+    try{
+        if (firstName && lastName){
+            res.status(200).json({
+                "message": `hello ${firstName} ${lastName}`
+            })
+        }else if (firstName){
+            res.status(200).json({
+                "message": `hello ${firstName}`
+            })
+        }else{
+            res.status(200).json({
+                "message": "hello world!"
+            })
+        }
+    }catch (error){
+        res.status(400).json({
+            "message": "something went wrong",
+            error
+        })
+    }
+    
 });
 
 //Gets all movies from MongoDB
@@ -141,6 +162,6 @@ app.get('/api/movies/:operation', async (req, res)=>{
     }, res)
 })
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 2000;
 
 app.listen(PORT, ()=>console.log(`listening on port ${PORT}`));
