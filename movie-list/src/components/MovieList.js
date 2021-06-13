@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import testMovies from './testMovieList';
+import Loading from '../components/Loading';
 import AddMovieForm from '../components/AddMovieForm';
 
 const MovieList = ({movies, setData}) => {
@@ -56,18 +57,7 @@ const MovieList = ({movies, setData}) => {
             </div>
         )
     }else{
-        return (
-            <div className="movie-list">
-                <div className="movie-cont">
-                            <input type="checkbox" className="movie-check" defaultChecked={false} ></input>
-                            <p className="unchecked"></p>
-                            <p className="checked">✅</p>
-                            <p className="movie-text" id={`no-data`} >
-                                NO DATA
-                            </p>
-                </div>
-            </div>
-        )
+        return <Loading/>
     }
     
 }

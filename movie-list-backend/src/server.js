@@ -1,7 +1,16 @@
-import express from 'express';
-import bodyParse from 'body-parser';
-import {MongoClient} from 'mongodb';
-import bodyParser from 'body-parser';
+const path = require('path');
+require('dotenv').config({
+    path: path.resolve(__dirname, '../config.env')
+});
+const express = require('express');
+const MongoClient = require('mongodb').MongoClient
+const bodyParser = require('body-parser');
+
+const PORT = process.env.PORT || 2000;
+const databaseURL = process.env.MONGO_URI;
+
+console.log(databaseURL);
+
 
 const app = express();
 
@@ -11,11 +20,13 @@ app.use(bodyParser.json())
 const withDB = async (operations, res) =>{
 
     try{
-        const client = await MongoClient.connect('mongodb://localhost/movie-list', { useNewUrlParser: true, useUnifiedTopology: true});
+        const client = await MongoClient.connect(databaseURL || 'mongodb://localhost/movie-list', { useNewUrlParser: true, useUnifiedTopology: true});
 
         const db = client.db('movie-list');
 
         await operations(db);
+
+        client.close();
     } catch (error){
         res.status(500).json({message: 'Error connecting to DB', error});
     }
@@ -162,6 +173,6 @@ app.get('/api/movies/:operation', async (req, res)=>{
     }, res)
 })
 
-const PORT = process.env.PORT || 2000;
+
 
 app.listen(PORT, ()=>console.log(`listening on port ${PORT}`));
