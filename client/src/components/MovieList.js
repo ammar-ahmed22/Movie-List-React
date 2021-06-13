@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import testMovies from './testMovieList';
-import Loading from '../components/Loading';
-import AddMovieForm from '../components/AddMovieForm';
+import Loading from './Loading';
+import AddMovieForm from './AddMovieForm';
 
 const MovieList = ({movies, setData}) => {
     
